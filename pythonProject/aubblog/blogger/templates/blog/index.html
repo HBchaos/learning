@@ -2,6 +2,7 @@
 {% extends "base.html" %}
 {% block page_title %}
     <h2>Blog Posts</h2>
+
 {% endblock page_title %}
 
 {% block page_content %}
@@ -13,6 +14,7 @@
                 {% for category in post.categories.all %}
                     <a href="{% url 'blog_category' category.name %}">
                         {{ category.name }}
+                        {%if not forloop.last%},{%endif%}
                     </a>
                 {% endfor %}
             </small>

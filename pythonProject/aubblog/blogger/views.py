@@ -6,6 +6,44 @@ from django.http import HttpResponseRedirect
 from blogger.forms import CommentForm
 from blogger.models import Post, Comment
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect
+
+from blogger.forms import PostForm
+from blogger.models import Post
+
+@login_required
+def create_post(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user  # Set the author to the current user
+            post.save()
+            return redirect('blog_index')
+    else:
+        form = PostForm()
+    return render(request, 'blog/create_post.html', {'form': form})
+
+@login_required
+def update_post(request, pk):
+    post = Post.objects.get(pk=pk)
+    if request.user == post.author:  # Check if the current user is the author of the post
+        if request.method == 'POST':
+            form = PostForm(request.POST, instance=post)
+            if form.is_valid():
+                post = form.save(commit=False)
+                post.author = request.user  # Set the author to the current user
+                post.save()
+                return redirect('blog_detail', pk=post.pk)
+        else:
+            form = PostForm(instance=post)
+        return render(request, 'blog/update_post.html', {'form': form})
+    else:
+        return HttpResponseRedirect('/')
+
+
 def blog_index(request):
     posts = Post.objects.all().order_by("-publication_date")
     context = {
