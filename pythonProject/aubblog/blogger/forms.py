@@ -10,6 +10,10 @@ class PostForm(forms.ModelForm):
         # Exclude 'author' field to prevent users from modifying it directly
         exclude = ['author']
 
+class LoginForm(forms.Form):
+    username = forms.CharField(max_length=63)
+    password = forms.CharField(max_length=63, widget=forms.PasswordInput)
+
 class CommentForm(forms.Form):
     author = forms.CharField(
         max_length=60,

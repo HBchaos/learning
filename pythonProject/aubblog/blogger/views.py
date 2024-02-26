@@ -3,15 +3,42 @@ from django.shortcuts import render
 # Create your views here.
 # blog/views.py
 from django.http import HttpResponseRedirect
-from blogger.forms import CommentForm
+from blogger.forms import CommentForm, LoginForm
 from blogger.models import Post, Comment
-
+from django.contrib.auth import login, authenticate
+from . import forms
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-
-from blogger.forms import PostForm
+from django.views import generic
+from django.contrib.auth.forms import UserCreationForm
+from django.urls import reverse_lazy
+from blogger.forms import PostForm, LoginForm
 from blogger.models import Post
+
+class register_page(generic.CreateView):
+    form_class = UserCreationForm
+    template_name = "blog/register.html"
+    success_url = reverse_lazy("login")
+
+@login_required
+def login_page(request):
+    form = forms.LoginForm()
+    message = ''
+    if request.method == 'POST':
+        form = forms.LoginForm(request.POST)
+        if form.is_valid():
+            user = authenticate(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password'],
+            )
+            if user is not None:
+                login(request, user)
+                message = f'Hello {user.username}! You have been logged in'
+            else:
+                message = 'Login failed!'
+    return render(
+        request, 'blog/login.html', context={'form': form, 'message': message})
 
 @login_required
 def create_post(request):
